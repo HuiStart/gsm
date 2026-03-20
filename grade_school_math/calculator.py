@@ -98,6 +98,13 @@ def sample(model, qn, tokenizer, device, sample_len):
             out = model.generate(
                 **toks, max_length=orig_len + 1, pad_token_id=model.config.eos_token_id
             )
+
+            # ================= 核心：提前终止逻辑 =================
+            # 检查刚生成的最后一个 token 是否为结束符
+            if out[0, -1].item() == model.config.eos_token_id:
+                qn = tokenizer.batch_decode(out)[0]
+                break  # 遇到结束符，立刻跳出循环，不再强行凑长度
+            # ====================================================
             text = tokenizer.batch_decode(out)[0]
 
             if out[0, -1].item() in EQUALS_TOKENS:
