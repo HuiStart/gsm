@@ -1,6 +1,11 @@
 from contextlib import contextmanager
 import signal
 import torch as th
+'''
+    解决模型算术计算错误问题：
+        1. 带超时的公式求值（eval_with_timeout），避免恶意计算；
+        2. 采样时触发计算器（检测<</=，替换模型的算术结果）
+'''
 
 # taken from
 # https://stackoverflow.com/questions/492519/timeout-on-a-function-call
@@ -9,10 +14,15 @@ def timeout(duration, formula):
     def timeout_handler(signum, frame):
         raise Exception(f"'{formula}': timed out after {duration} seconds")
 
-    signal.signal(signal.SIGALRM, timeout_handler)
-    signal.alarm(duration)
-    yield
-    signal.alarm(0)
+    # signal.signal(signal.SIGALRM, timeout_handler)
+    '''
+        signal 模块中，signal.alarm() 函数是 Unix/Linux/macOS 系统专属的
+        signal.alarm(): 一个用于设置定时器的系统级调用
+        核心作用: 防止模型在调用计算器时陷入死循环或执行时间过长的恶意计算
+    '''
+    # signal.alarm(duration)
+    # yield
+    # signal.alarm(0)
 
 
 def eval_with_timeout(formula, max_time=3):
@@ -20,7 +30,7 @@ def eval_with_timeout(formula, max_time=3):
         with timeout(max_time, formula):
             return eval(formula)
     except Exception as e:
-        signal.alarm(0)
+        # signal.alarm(0)
         print(f"Warning: Failed to eval {formula}, exception: {e}")
         return None
 

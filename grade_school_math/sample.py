@@ -3,7 +3,9 @@ from dataset import get_examples, GSMDataset
 from calculator import sample
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
-
+'''
+    示例采样代码：加载训练好的模型，结合计算器逻辑生成解题结果
+'''
 def main():
     device = th.device("cuda")
     tokenizer = GPT2Tokenizer.from_pretrained("gpt2")

@@ -2,6 +2,9 @@ import os
 import json
 from termcolor import colored
 
+'''
+    可视化模型解答：按题展示不同模型（6B/175B 微调 / 验证）的解题过程及正确性（绿色 = 正确，红色 = 错误）
+'''
 def read_jsonl(path: str):
     with open(path) as fh:
         return [json.loads(line) for line in fh.readlines() if line]
