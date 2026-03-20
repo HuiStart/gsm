@@ -5,6 +5,8 @@ from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
 '''
     示例采样代码：加载训练好的模型，结合计算器逻辑生成解题结果
+    推理（Inference）代码
+    
 '''
 def main():
     device = th.device("cuda")

@@ -35,6 +35,21 @@ def eval_with_timeout(formula, max_time=3):
         return None
 
 
+# def use_calculator(sample):
+#     if "<<" not in sample:
+#         return None
+#
+#     parts = sample.split("<<")
+#     remaining = parts[-1]
+#     if ">>" in remaining:
+#         return None
+#     if "=" not in remaining:
+#         return None
+#     lhs = remaining.split("=")[0]
+#     lhs = lhs.replace(",", "")
+#     if any([x not in "0123456789*+-/.()" for x in lhs]):
+#         return None
+#     return eval_with_timeout(lhs)
 def use_calculator(sample):
     if "<<" not in sample:
         return None
@@ -45,12 +60,30 @@ def use_calculator(sample):
         return None
     if "=" not in remaining:
         return None
+
     lhs = remaining.split("=")[0]
     lhs = lhs.replace(",", "")
+
+    # 限制只能包含数字和基本数学符号，防止恶意代码注入
     if any([x not in "0123456789*+-/.()" for x in lhs]):
         return None
-    return eval_with_timeout(lhs)
 
+    # --- 核心修改部分 ---
+    try:
+        # 使用原生 eval 进行计算，禁用内置函数以确保安全
+        ans = eval(lhs, {"__builtins__": None}, {})
+
+        # 简单处理一下浮点数精度，避免 2.00000000001 这种尴尬结果
+        if isinstance(ans, float):
+            ans = round(ans, 4)
+            # 如果是 4.0 这种，直接转成整数 4
+            if ans.is_integer():
+                ans = int(ans)
+
+        return ans
+    except Exception as e:
+        print(f"原生计算器执行出错: 无法计算 {lhs}, 错误信息: {e}")
+        return None
 
 def sample(model, qn, tokenizer, device, sample_len):
     # Inefficient version of calculator sampling -- no batches, doesn't
